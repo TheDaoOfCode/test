@@ -1,4 +1,4 @@
-//MD5Hash:437bd5bf2f1feb3cfd83718fdffaf40a;
+//JUST DOING TESTS - THIS UNITY3D CODE DOESNT DO WHAT IT NEEDS TO AT THE MOMENT
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
