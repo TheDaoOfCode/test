@@ -64,22 +64,7 @@ public class ShowHideSeqence : MonoBehaviour
 
 
         if (Input.GetMouseButtonDown(0)) //ON MOUSE DOWN
-        {
-            //BroadcastMessage("ClickedLeftButton");
 
-            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-
-            //if (Physics.Raycast(ray, out hit, 100))
-            //{
-
-            //    //Debug.DrawLine (ray.origin, hit.point);
-
-            //    objectHit = hit.transform.gameObject;
-            //    objectHitTrans = hit.transform;
-            //    objectHitParent = hit.transform.parent.gameObject;
-
-            //}
 
             //current slider value == needs own slider separate from hide show
 
@@ -115,9 +100,8 @@ public class ShowHideSeqence : MonoBehaviour
 
         //allChildrenInSculpture.Clear();
 
-
-
     }
+
 
     public void ValueChangeCheck()
     {
