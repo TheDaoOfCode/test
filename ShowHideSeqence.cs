@@ -1,4 +1,4 @@
-//JUST DOING TESTS - THIS UNITY3D CODE DOESNT DO WHAT IT NEEDS TO AT THE MOMENT
+//MD5Hash:437bd5bf2f1feb3cfd83718fdffaf40a;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
@@ -13,238 +13,136 @@ using System.Collections;
 
 public class ShowHideSeqence : MonoBehaviour
 {
-    public GameObject[]             sculptureChildren   = null;
-    public Slider                   sliderShowHide      = null;
-    public Slider sliderNumberOfChildrenInfo = null;
-    public int                      sliderInt;
-    public int                      childID;
+    public Slider               slider      = null;
+    public int                  slider_i_Now;
 
-    public Transform       currentChild                ;
-    private Transform[]     currentChildren             ;
-    public  List <GameObject> allChildrenInSculpture    ;
+    public List  <GameObject>   children_List;
+    
+	public List <int>          	slider_Values;
+	private List  <Renderer>    currentRenderersAll;
 
-    private bool            flip                        ;
-    private GameObject      SculptureHolder             ;
-    private Renderer[]      currentRenderer             ;
-    private List <Renderer> currentRenderersAll         ;
-    public int numOfChildren;
-    public bool listAlreadyMade;
-    public GameObject currentChildInViz;
-    public GameObject currentChildViz;
-    public float ShowHideWaitTime;
-    public bool quickShowHide;
-    public AudioSource musicSource = null;
-    public AudioClip musicClip = null;
-    public GameObject objectHit;
-    public Transform objectHitTrans;
-    public GameObject objectHitParent;
-    public List<int> storeOfSliderValues;
-    private RaycastHit hit;
-    private List<GameObject> listOfChildrenOnHitInstance;
-    private int indexOfClickedNote;
-    public int sliderPreviousValue;
-    public int sliderCurrentValue;
-    public bool removeDuplicates;
+    private GameObject          SculptureHolder;
+
+    public int                  child_Count;
+	public float 				build_Time;
+
+    public bool                 quickShowHide;// for QUICK VERSION  
+    public AudioSource          musicSource = null;
+    public AudioClip            musicClip = null;
+    public int                  slider_PreviousValue;
+    public int                  slider_CurrentValue;
+
+    //public bool                 removeDuplicates; // FOR CHECKIGN CURRENT.PREVISOUS VERSION
+    public bool                 show;
+    public bool                 hide;
 
     void Start()
 	{
         SculptureHolder = GameObject.Find("Sculpture 1");
-        listAlreadyMade = false;
-        musicSource.clip = musicClip;
-        sliderShowHide.value = 0;
+        slider_i_Now = Mathf.RoundToInt(slider.value);
 
+        child_Count = 0;
+        slider.value = 0;
+        
+        musicSource.clip = musicClip;
     }
 
     void Update()
     {
-        sliderInt = Mathf.RoundToInt(sliderShowHide.value);
-      
-        //sliderShowHide.value        = numOfChildren;
-        //sliderShowHide.maxValue     = numOfChildren;
+        
 
 
-        if (Input.GetMouseButtonDown(0)) //ON MOUSE DOWN
-        {
-            //BroadcastMessage("ClickedLeftButton");
+        if (Input.GetMouseButtonDown(0)&&(quickShowHide == true) ){  //ON MOUSE DOWN
 
-            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+             // DRIVE SLIDER WITH CHILD COUNT
+                
+			MakeSculpture(); // a-MAKE LIST
 
+			//StartCoroutine(MakeSculpture());
 
-            //if (Physics.Raycast(ray, out hit, 100))
-            //{
-
-            //    //Debug.DrawLine (ray.origin, hit.point);
-
-            //    objectHit = hit.transform.gameObject;
-            //    objectHitTrans = hit.transform;
-            //    objectHitParent = hit.transform.parent.gameObject;
-
-            //}
-
-            //current slider value == needs own slider separate from hide show
+            child_Count     = SculptureHolder.transform.childCount; //b-SET VAR TO CHILD COUNT
+            slider_i_Now = Mathf.RoundToInt(slider.value);
 
 
-            numOfChildren = SculptureHolder.transform.childCount;
+        
+                //{Show(); print("PASSED << SHOW >> CONDITION ");}
 
+                //{HideArray(); print("PASSED << HIDE >> CONDITION ");}
 
-            for (var i = 0; i < numOfChildren; i++)                // A - POPULATE THE LIST OF CHILDREN
-            {
-                print("CREATING LIST OF CHILDREN IN SCULPTURE");
+			StartCoroutine (Show ());
+			StartCoroutine (Hide ());
+				
 
-                currentChild = SculptureHolder.transform.GetChild(i); //get current child transform
-
-                allChildrenInSculpture.Add(currentChild.gameObject); //
-
-            }
-
-            sliderShowHide.value = numOfChildren;
-
-            sliderShowHide.onValueChanged.AddListener(delegate { ValueChangeCheck(); });
-
-            print("PRESSED LEFT BUTTON");
-
-
-        }
-    }
-
+                print("CREATING SCULPTURE SETTING CHILD COUNT AND SLIDER i  ");
  
-
-
-    public void MakeSculptureList()  //MAKE LIST ON FIRST DRAG OF THE SLIDER ( SHOULD BE MADE DYNAMIC, IF MADE TO CHECK FOR NEW OBJECTS PRESENT )
-    {
-
-        //allChildrenInSculpture.Clear();
-
-
-
-    }
-
-    public void ValueChangeCheck()
-    {
-
-        storeOfSliderValues.Add(sliderInt);
-
-        sliderCurrentValue = sliderInt;
-        sliderPreviousValue = storeOfSliderValues.ElementAt(storeOfSliderValues.Count() - 1);
-
-        if (removeDuplicates == true && (sliderCurrentValue == sliderPreviousValue) && (storeOfSliderValues.Count > 1)) //IF CURRENT VALUE IS NOT THE SAME AS PREVIOUS LOG THE NUMBER IN THE LIST
-        {
-
-            storeOfSliderValues.RemoveAt(storeOfSliderValues.Count); //REMOVE DUPLICATE
-         
         }
-        else { storeOfSliderValues.Add(sliderInt); }
+    
+		//slider.onValueChanged.AddListener(delegate { StartCoroutine(Show());});
+		//slider.onValueChanged.AddListener(delegate { StartCoroutine(Hide()); });
+          
 
-        if      (sliderCurrentValue > sliderPreviousValue)
-        {
-            allChildrenInSculpture.ElementAt(storeOfSliderValues.Count() - 1).SetActive(true);
-            print("CURRENT VALUE IS " + sliderCurrentValue + "BIGGER: MAKE VISIBLE")     ;
+    }
+
+
+
+//==========================  FUNCTIONS FOR QUICK FOR LOOP ==== //
+IEnumerator Show() {
+
+      for (var j = 0; j < slider_i_Now; j++){                    // SHOW - TO LEFT OF SLIDER HANDLE: 0 -> slider.value
+
+        children_List.ElementAt(j).SetActive(true); 
+
+        print("SETTING 0 - Slider.Value [ " + j + " ] SHOWING " );
+
+		yield return new WaitForSeconds (build_Time);
         }
-        else if (sliderCurrentValue < sliderPreviousValue)      {
+    }   
+       
 
-            allChildrenInSculpture.ElementAt(storeOfSliderValues.Count() -1).SetActive(false);
-            print("PREVIOUS VALUE IS " + sliderPreviousValue + "SMALLER: MAKE INVISIBLE")  ;}
+IEnumerator Hide () {
+if (slider_i_Now < child_Count){
+  for (var k = slider_i_Now ; k < child_Count; k++) {   // HIDE - TO RIGHT OF SLIDER HANDLE: slider.value -> .count
+
+        children_List.ElementAt(k).SetActive(false);
+
+        print("SETTING 0 - Slider.Value [ " + k + " ] HIDING " );
+
+		yield return new WaitForSeconds (build_Time);
+        }
+    }
+}
+
+
+
+	public void MakeSculpture(){  //MAKE  ON FIRST DRAG OF THE SLIDER ( SHOULD BE MADE DYNAMIC, IF MADE TO CHECK FOR NEW OBJECTS PRESENT )
+
+        //CLEAR OLD VALUES*
+        children_List.Clear();
+
+        slider_i_Now    = child_Count; //
+        //slider.value    = child_Count; // INCREMENT SLIDER POS BASED ON NUMBER OF CHILDREN
+        slider.maxValue = child_Count; // KEEP MAX SLIDER VALUE CONNECTED TO NUMBER OF CHILDREN 
+
+        //ADD EACH CHILD IN SCULPTURE TO A *
+        for (var i = 0; i < SculptureHolder.transform.childCount; i++)                     
+        {
+            children_List.Add(SculptureHolder.transform.GetChild(i).gameObject);
+
+            print("CREATING  OF CHILDREN IN SCULPTURE");
+
+		//yield return new WaitForSeconds (build_Time);
+        }
 
     }
 
-    public void ShowHideBaseOnAdding()
-    {
+    public void DeleteSculpture (){
 
-    }
-
-    public void DeleteSculpture ()
-    {
-
-        foreach (var i in allChildrenInSculpture)
+        foreach (var i in children_List)
         {
             DestroyObject(i);
-            storeOfSliderValues.Clear();
+            slider_Values.Clear();
         }
     }
-
-    //public void OnMouseDown()
-    //{
-    //    if (Input.GetMouseButtonDown(0)) //ON MOUSE DOWN
-    //    {
-    //        BroadcastMessage("ClickedLeftButton");
-
-    //        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-
-    //        if (Physics.Raycast(ray, out hit, 100))
-    //        {
-
-    //            //Debug.DrawLine (ray.origin, hit.point);
-
-    //            objectHit = hit.transform.gameObject;
-    //            objectHitTrans = hit.transform;
-    //            objectHitParent = hit.transform.parent.gameObject;
-
-    //        }
-
-    //        sliderShowHide.value        = numOfChildren;
-
-
-    //        //listOfChildrenOnHitInstance = objectHitParent.GetComponent<ArrayOfChildObjects>().ArrayOfChildObjInNote; //RETURNS LIST OF CHILDREN ON THE NOTE (Texture..buttons etc)
-
-    //        //indexOfClickedNote = objectHitParent.GetComponent<ArrayOfChildObjects>().myINDEX;                       //GET INDEX OF THE NOTE - gets it by finding the parent of the texture
-    //        //indexOfClickedNote 	= listOfInstances.IndexOf (objectHitParent) ;            						// GET PARENT ID OF THE PARENT OF THE HIT TEXTURE/FIELD OBJECT >>doesnt seem to return correct id
-
-
-
-    //    }
-    //}
-
-
-
-
-
- ////==========================  WORKS KINDOFF ====
- //   public void ShowHidePerIDArray() {
- //       if (quickShowHide == true)
- //       {
-
- //           for (var j = 0; j < sliderInt; j++)                     // A - SET GOS TO LEFT OF SLIDER HANDLE VISIBLE
- //           {
- 
- //               currentChildViz = allChildrenInSculpture.ElementAt(j);
- //               Invoke("ShowObjects", 0.1f);
-
- //               print("SETTING 0 - Slider.Value [ " + j + " ] VISIBLE" + currentChildViz);
-
-
-
- //               for (var k = sliderInt; k < numOfChildren; k++)     // B - SET GOS TO RIGHT OF SLIDER HANDLE NOT VISIBLE
- //               {
-
- //                   currentChildInViz = allChildrenInSculpture.ElementAt(k);
- //                   Invoke("HideObjects", 0.1f);
-
- //                   print("SETTING 0 - Slider.Value [ " + k + " ] NOT !VISIBLE" + currentChildInViz);
-
-                   
- //               }
- //           }
-
- //       }
- //       else StartCoroutine(HideAndShowGos());
- //   }
-
-
-
- //   public void ShowObjects()
- //   {
- //       currentChildViz.SetActive(true);
- //       print(" SETTING LEFT ACTIVE");
- //   }
-
- //   public void HideObjects()
- //   {
- //       currentChildInViz.SetActive(false);
- //       print(" SETTING RIGHT INACTIVE");
-
- //   }
-
 
  //   IEnumerator HideAndShowGos()
  //   {
@@ -289,11 +187,43 @@ public class ShowHideSeqence : MonoBehaviour
  //       }
  //   }
 
- //   //=========================== WORKS KINDOFF ===
+ //   //=========================== WORKS KINDOFF END ===//
 
-    /*
+
+  //IF THE SLIDER IS PRESSED RANDOMLY THIS APPROACH IS NOT ENOUGH - NEEDS A FOR LOOP or A CURRENT TO PRESSED VALUE
+   // public void ValueChangeCheck(){
+
+        //STORE CURRENT SLIDER VALUE*
+        //store_OfSliderValues.Add(sliderIntValue);
+
+        //slider_CurrentValue = store_OfSliderValues.ElementAt(store_OfSliderValues.Count()       );
+        //slider_PreviousValue = store_OfSliderValues.ElementAt(store_OfSliderValues.Count() - 1  );
+
+        //if (removeDuplicates == true && (slider_CurrentValue == slider_PreviousValue) && (store_OfSliderValues.Count > 1)) //IF CURRENT VALUE IS NOT THE SAME AS PREVIOUS LOG THE NUMBER IN THE 
+        //{
+        //    //REMOVE DUPLICATE*
+        //    store_OfSliderValues.RemoveAt(store_OfSliderValues.Count);
+
+        //    //EVALUATE CURRENT AND PREVIOUS*
+        //    if (slider_CurrentValue > slider_PreviousValue)
+        //    {
+        //        children_List.ElementAt(store_OfSliderValues.Count() - 1).SetActive(true);
+        //        print("CURRENT VALUE IS " + slider_CurrentValue + "BIGGER: MAKE VISIBLE");
+        //    }
+        //    if (slider_CurrentValue < slider_PreviousValue)
+        //    {
+        //        children_List.ElementAt(store_OfSliderValues.Count() - 1).SetActive(false);
+        //        print("PREVIOUS VALUE IS " + slider_PreviousValue + "SMALLER: MAKE INVISIBLE");
+        //    }
+
+        //}
+
+    //}
+
+
+    /* 
    
-    public void ShowHidePerID () //WORKS THE OLDE WAY
+    public void ShowHidePerID () //=======WORKS THE OLDE WAY==============//
     {
         SculptureHolder     = GameObject.Find("Sculpture 1")                    ; //FindParentByName("Scupture1")
 
